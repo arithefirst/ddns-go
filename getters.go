@@ -4,6 +4,9 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func getIpAddress() (string, error) {
@@ -20,4 +23,18 @@ func getIpAddress() (string, error) {
 	}
 
 	return string(body), nil
+}
+
+func getAccessToken() (string, error) {
+	err := godotenv.Load()
+	if err != nil {
+		return "", err
+	}
+
+	token := os.Getenv("CLOUDFLARE_ACCESS_TOKEN")
+	if token == "" {
+		return "", errors.New("Error getting access token: Token not set")
+	}
+
+	return token, nil
 }
