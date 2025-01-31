@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/cloudflare/cloudflare-go/v3"
+	"github.com/cloudflare/cloudflare-go/v3/option"
 	"github.com/joho/godotenv"
 )
 
@@ -25,16 +27,28 @@ func getIpAddress() (string, error) {
 	return string(body), nil
 }
 
-func getAccessToken() (string, error) {
+func getClient() (*cloudflare.Client, error) {
+	// Load the env vars into the program
 	err := godotenv.Load()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	token := os.Getenv("CLOUDFLARE_ACCESS_TOKEN")
 	if token == "" {
-		return "", errors.New("Error getting access token: Token not set")
+		return nil, errors.New("Error getting client: Token not set")
 	}
 
-	return token, nil
+	email := os.Getenv("CLOUDFLARE_USERNAME")
+	if token == "" {
+		return nil, errors.New("Error getting client: Email not set")
+	}
+
+	// Create and return cloudflare client
+	client := cloudflare.NewClient(
+		option.WithAPIKey(token),
+		option.WithAPIEmail(email),
+	)
+
+	return client, nil
 }

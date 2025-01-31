@@ -11,10 +11,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	token, err := getAccessToken()
+	client, err := getClient()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("IP: %sToken: %s\n", ip, token)
+	fmt.Printf("IP: %sClient: %v\n", ip, client)
 }
