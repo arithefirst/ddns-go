@@ -9,7 +9,6 @@ import (
 
 	"github.com/cloudflare/cloudflare-go/v3"
 	"github.com/cloudflare/cloudflare-go/v3/option"
-	"github.com/joho/godotenv"
 )
 
 func getIpAddress() (string, error) {
@@ -29,12 +28,6 @@ func getIpAddress() (string, error) {
 }
 
 func getClient() (*cloudflare.Client, error) {
-	// Load the env vars into the program
-	err := godotenv.Load()
-	if err != nil {
-		return nil, err
-	}
-
 	token := os.Getenv("CLOUDFLARE_ACCESS_TOKEN")
 	if token == "" {
 		return nil, errors.New("Error getting client: Token not set")
@@ -55,12 +48,6 @@ func getClient() (*cloudflare.Client, error) {
 }
 
 func getZones() ([]string, error) {
-	// Load the env vars into the program
-	err := godotenv.Load()
-	if err != nil {
-		return nil, err
-	}
-
 	zones := os.Getenv("ZONES")
 	if zones == "" {
 		return nil, errors.New("Error getting zones: Not set")
