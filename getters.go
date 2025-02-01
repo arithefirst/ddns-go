@@ -5,11 +5,26 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/cloudflare/cloudflare-go/v3"
 	"github.com/cloudflare/cloudflare-go/v3/option"
 )
+
+func readConfig() (config, error) {
+	data, err := os.ReadFile("config.toml")
+	if err != nil {
+		return config{}, err
+	}
+
+	var Config config
+	err = toml.Unmarshal(data, &Config)
+	if err != nil {
+		return config{}, err
+	}
+
+	return Config, nil
+}
 
 func getIpAddress() (string, error) {
 	resp, err := http.Get("https://icanhazip.com")
@@ -27,31 +42,12 @@ func getIpAddress() (string, error) {
 	return string(body), nil
 }
 
-func getClient() (*cloudflare.Client, error) {
-	token := os.Getenv("CLOUDFLARE_ACCESS_TOKEN")
-	if token == "" {
-		return nil, errors.New("Error getting client: Token not set")
-	}
-
-	email := os.Getenv("CLOUDFLARE_USERNAME")
-	if token == "" {
-		return nil, errors.New("Error getting client: Email not set")
-	}
-
+func getClient(Config config) (*cloudflare.Client, error) {
 	// Create and return cloudflare client
 	client := cloudflare.NewClient(
-		option.WithAPIKey(token),
-		option.WithAPIEmail(email),
+		option.WithAPIKey(Config.Token),
+		option.WithAPIEmail(Config.Email),
 	)
 
 	return client, nil
-}
-
-func getZones() ([]string, error) {
-	zones := os.Getenv("ZONES")
-	if zones == "" {
-		return nil, errors.New("Error getting zones: Not set")
-	}
-
-	return strings.Split(zones, ","), nil
 }

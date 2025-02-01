@@ -6,8 +6,13 @@ import (
 	"log"
 
 	"github.com/cloudflare/cloudflare-go/v3/zones"
-	"github.com/joho/godotenv"
 )
+
+type config struct {
+	Token string
+	Email string
+	Zones []string
+}
 
 func main() {
 	// ip, err := getIpAddress()
@@ -15,17 +20,19 @@ func main() {
 	// 	log.Fatal(err.Error())
 	// }
 
-	// Load the env vars into the program
-	err := godotenv.Load()
+	print("Reading Config...\n")
+	Config, err := readConfig()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	client, err := getClient()
+	print("Creating Client...\n")
+	client, err := getClient(Config)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
+	print("Sending Request...\n")
 	page, err := client.Zones.List(context.TODO(), zones.ZoneListParams{})
 	if err != nil {
 		log.Fatalf("Error in request: %s", err.Error())
