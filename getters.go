@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -50,4 +52,38 @@ func getClient(Config config) (*cloudflare.Client, error) {
 	)
 
 	return client, nil
+}
+
+func getRecord(Config config, recordID string, zoneID string) (CloudflareDNSResponse, error) {
+
+	// Yes this uses the reqular HTTP instead of the SDK
+	// I started getting a bunch of errors and stuff out of the SDK
+	// even after taking verbatium from the docs, so here we are.
+	url := fmt.Sprintf("https://api.cloudflare.com/client/v4/zones/%s/dns_records/%s", zoneID, recordID)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return CloudflareDNSResponse{}, err
+	}
+
+	req.Header.Set("X-Auth-Email", Config.Email)
+	req.Header.Set("X-Auth-Key", Config.Token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return CloudflareDNSResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return CloudflareDNSResponse{}, err
+	}
+
+	var response CloudflareDNSResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return CloudflareDNSResponse{}, err
+	}
+
+	return response, nil
 }
