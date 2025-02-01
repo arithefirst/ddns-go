@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/cloudflare/cloudflare-go/v3"
 	"github.com/cloudflare/cloudflare-go/v3/option"
@@ -51,4 +52,19 @@ func getClient() (*cloudflare.Client, error) {
 	)
 
 	return client, nil
+}
+
+func getZones() ([]string, error) {
+	// Load the env vars into the program
+	err := godotenv.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	zones := os.Getenv("ZONES")
+	if zones == "" {
+		return nil, errors.New("Error getting zones: Not set")
+	}
+
+	return strings.Split(zones, ","), nil
 }
